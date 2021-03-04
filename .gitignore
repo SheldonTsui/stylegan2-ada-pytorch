@@ -6,3 +6,5 @@ training-runs/
 *.swp
 tmp_scripts/
 datasets/
+*backup/
+
