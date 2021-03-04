@@ -171,10 +171,6 @@ class DispFolderDataset(Dataset):
             raise IOError('No image files found in the specified path')
 
         name = path.split('/')[-1].split('.')[0]
-        self._check_list_file = self._path.replace('.zip', '_list.txt')
-        with open(self._check_list_file, 'r') as cur_file:
-            _check_list = cur_file.readlines()
-        assert self._image_fnames == [fname[:-1] for fname in self._check_list_file]
         raw_shape = [len(self._image_fnames)] + list(self._load_raw_image(0).shape)
         if resolution is not None and (raw_shape[2] != resolution or raw_shape[3] != resolution):
             raise IOError('Image files do not match the specified resolution')
