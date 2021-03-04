@@ -17,11 +17,15 @@ start = 10
 stride = 5
 resolution = 256
 visualize_path = './out'
+EXPAND = 8
+with_EXPAND = False 
 for npy_file in tqdm(npy_list[start::stride]):
     disp_contents = np.load(npy_file)
     H, W, c = disp_contents.shape
     gh, gw = H // resolution, W // resolution
     disp_maps = disp_contents.reshape(gh, resolution, gw, resolution, c).transpose(0,2,4,1,3).reshape(-1, resolution, resolution, c)
+    if with_EXPAND:
+        disp_maps /= with_EXPAND
     labels = np.load(npy_file.replace('.npy', '_label.npy'))
     assert disp_maps.shape[0] == labels.shape[0]
     
@@ -44,7 +48,7 @@ for npy_file in tqdm(npy_list[start::stride]):
             data_dir = data_dir
         )
         disp_v = generator.resample(torch.from_numpy(disp_map[np.newaxis, :]))
-        disp_v = disp_v.squeeze(0).numpy()
+        disp_v = disp_v.squeeze(0).numpy().clip(min=-1/EXPAND, max=1/EXPAND)
         vertices, faces = read_obj(tmp_mesh_expand_file)
         vertices = np.stack(vertices) + disp_v
         

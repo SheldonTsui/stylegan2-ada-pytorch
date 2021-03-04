@@ -5,7 +5,7 @@ from glob import glob
 from tqdm import tqdm
 import torch
 import smplx
-from .ry_utils import ry_utils
+from .ry_utils import load_pkl 
 
 class SMPL_Obtainer(object):
     def __init__(self, model_file='SMPL_NEUTRAL.pkl'):
@@ -28,7 +28,7 @@ class SMPL_Obtainer(object):
                     out_f.write(f"f {f[0]} {f[1]} {f[2]}\n")
 
     def get_smpl_pkl_file(self, input_pkl_file, out_mesh_file):
-        params = ry_utils.load_pkl(input_pkl_file)
+        params = load_pkl(input_pkl_file)
         pose = params['pose']
         shape = params['betas']
         pose = torch.from_numpy(pose).view(1, 72).float()
