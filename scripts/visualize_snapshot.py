@@ -12,14 +12,14 @@ from objfile import read_obj, write_obj
 smpl_obtainer = SMPL_Obtainer()
 
 snapshot_path = '../training-runs/00000-THUman-cond-auto8'
-npy_list = sorted(glob(osp.join(snapshot_path, 'fakes*[0-9].npy')))
+npy_list = sorted(glob(osp.join(snapshot_path, 'reals.npy')))
 start = 10
 stride = 5
 resolution = 256
 visualize_path = './out'
 EXPAND = 8
 with_EXPAND = False 
-for npy_file in tqdm(npy_list[start::stride]):
+for npy_file in tqdm(npy_list):
     disp_contents = np.load(npy_file)
     H, W, c = disp_contents.shape
     gh, gw = H // resolution, W // resolution
@@ -29,11 +29,11 @@ for npy_file in tqdm(npy_list[start::stride]):
     labels = np.load(npy_file.replace('.npy', '_label.npy'))
     assert disp_maps.shape[0] == labels.shape[0]
     
-    npy_stride = 60
+    npy_stride = 30
     for idx, disp_map in enumerate(disp_maps[::npy_stride]):
         idx = idx * npy_stride
         label = labels[idx]
-        npy_file_idx = npy_file[-4-6:-4]
+        npy_file_idx = 'real' # npy_file[-4-6:-4]
         tmp_mesh_out_file = osp.join(visualize_path, f'smpl_{npy_file_idx}_{idx:04d}.obj')
         tmp_mesh_expand_file = osp.join(visualize_path, f'smpl_{npy_file_idx}_{idx:04d}_expand.obj')
         smpl_obtainer.get_smpl_pose_shape(pose=label[10:], shape=label[:10], out_mesh_file=tmp_mesh_out_file)

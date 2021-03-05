@@ -27,7 +27,7 @@ def expand_smpl_model(obj_file, out_obj_file, out_mapping_file=None):
         
     new_vertices = np.stack(new_vertices)
     new_vertices = np.concatenate((orig_v, new_vertices), axis=0)
-    #print("# new_vertices", len(new_vertices)) 
+    print("# new_vertices", len(new_vertices)) 
 
     new_faces = []
     for face in orig_f:
@@ -41,23 +41,24 @@ def expand_smpl_model(obj_file, out_obj_file, out_mapping_file=None):
         new_faces.extend([cur_new_face1, cur_new_face2, cur_new_face3, cur_new_face4])
 
     new_faces = (np.stack(new_faces) + 1).astype(np.int32)
-    #print("# new_faces", len(new_faces))
+    print("# new_faces", len(new_faces))
 
     write_obj(out_obj_file, new_vertices, new_faces)
     if out_mapping_file is not None:
         mmcv.dump(new_v_mapping, out_mapping_file)
 
 if __name__ == '__main__':
-    base_path = "/home/xuxudong/3D/data/Multi-Garment/Multi-Garment_dataset"
-    #folders = sorted(glob(osp.join(base_path, 'results*/*')))
-    folders = sorted(glob(osp.join(base_path, '12*')))
+    #base_path = "/home/xuxudong/3D/data/Multi-Garment/Multi-Garment_dataset"
+    base_path = "/home/xuxudong/3D/data/THUman/dataset"
+    folders = sorted(glob(osp.join(base_path, 'results*/*')))
+    #folders = sorted(glob(osp.join(base_path, '12*')))
     print("# folders:", len(folders))
 
     # expand smpl model
     # vertices: 6890 -> 27554
     # faces: 13776 -> 55104
     for folder in folders:
-        obj_file = osp.join(folder, 'smpl.obj')
+        obj_file = osp.join(folder, 'smpl_neutral.obj')
         out_obj_file = osp.join(folder, 'smpl_expanded.obj')
-        out_mapping_file = osp.join(folder, 'new_v_mapping.pkl')
-        expand_smpl_model(obj_file, out_obj_file, out_mapping_file)
+        #out_mapping_file = osp.join(folder, 'new_v_mapping.pkl')
+        expand_smpl_model(obj_file, out_obj_file, out_mapping_file=None)
