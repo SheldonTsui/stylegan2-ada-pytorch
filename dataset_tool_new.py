@@ -81,7 +81,7 @@ def pkl_param_parsing(pkl_fname):
 
 def open_image_folder(source_dir, *, max_images: Optional[int]):
     EXPAND = 10
-    resolution = 128 
+    resolution = 256 
     dataset_name = source_dir.split('/')[-1]
     #input_images = [str(f) for f in sorted(Path(source_dir).rglob('*')) if is_image_ext(f) and os.path.isfile(f)]
     if dataset_name == 'THUman':
