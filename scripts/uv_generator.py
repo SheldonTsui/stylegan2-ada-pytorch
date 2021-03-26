@@ -14,6 +14,7 @@ import torch.nn.functional as F
 
 import pickle
 import numpy as np
+import pdb
 
 '''
 Index_UV_Generator is used to transform mesh and location map
@@ -220,8 +221,10 @@ class Index_UV_Generator(nn.Module):
 
 
     def get_UV_map(self, verts):
-        self.bary_weights = self.bary_weights.type(verts.dtype).to(verts.device)
-        self.v_index = self.v_index.to(verts.device)
+        '''every pixel in UV map is determined by 3 adjacent vertices
+        '''
+        self.bary_weights = self.bary_weights.type(verts.dtype).to(verts.device) # shape: [res, res, 3]
+        self.v_index = self.v_index.to(verts.device) # shape: [res, res, 3]
 
         if verts.dim() == 2:
             verts = verts.unsqueeze(0)

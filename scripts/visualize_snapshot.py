@@ -109,7 +109,7 @@ class Mesh_Handler(object):
         normals_local = normals - expanded_normals
         self.save_normal_map(normals_local, out_img_file)
 
-def stylegan2_visualize(mesh_handler):
+def stylegan2_visualize(mesh_handler, save_img=False):
     snapshot_path = '../training-runs/00000-THUman-cond-auto8'
     npy_list = sorted(glob(osp.join(snapshot_path, 'fakes*[0-9].npy')))
     start = 10
@@ -137,13 +137,16 @@ def stylegan2_visualize(mesh_handler):
             idx = idx * npy_stride
             npy_file_idx = osp.basename(npy_file).split('.')[0]
             label = labels[idx]
-
             out_label = f'{npy_file_idx}_{idx:04d}'
+            if save_img:
+                disp_img = disp_modulate(disp_map, max_value=255)
+                mmcv.imwrite(disp_img, osp.join(visualize_path, f'UV_{out_label}.jpg'))
+
             expanded_mesh_file = mesh_handler.get_expanded_mesh(label, out_label)
             out_mesh_file = osp.join(visualize_path, f'smpl_{out_label}_gen.obj')
             mesh_handler.get_disped_mesh(disp_map, expanded_mesh_file, out_mesh_file)
 
-def GT_visualize(mesh_handler, out_json_file=''):
+def GT_visualize(mesh_handler, out_json_file='', save_img=False):
     base_path = '/home/xuxudong/3D/data/THUman/dataset'
     folders = sorted(glob(osp.join(base_path, 'results_gyc_20181010_hsc_1_M', '*')))
     out_folder = 'out/disp_mesh'
@@ -155,6 +158,8 @@ def GT_visualize(mesh_handler, out_json_file=''):
 
         disp_map = np.load(disp_file)[0]
         disp_img = disp_modulate(disp_map, max_value=255)
+        if save_img:
+            mmcv.imwrite(disp_img, osp.join(out_folder, f'UV_{idx:04d}.jpg'))
         
         disp_map = disp_demodulate(disp_img)
         expanded_mesh_file = osp.join(folder, 'smpl_expanded.obj')
@@ -165,11 +170,13 @@ def GT_visualize(mesh_handler, out_json_file=''):
     if len(out_json_file) > 0:
         mmcv.dump(expanded_mesh_dict, osp.join(out_folder, out_json_file))
 
-def CIPS_visualize(mesh_handler, out_json_file=''):
+def CIPS_visualize(mesh_handler, out_json_file='', save_img=False, n_iter=50000):
     src_path = '/home/xuxudong/3D/CIPS/outputs/skip-THUman/samples'
-    disp_imgs = np.load(osp.join(src_path, 'sample_imgs.npy'))
-    labels = np.load(osp.join(src_path, 'sample_c.npy'))
-    out_folder = 'out/generate'
+    disp_imgs = np.load(osp.join(src_path, f'sample_imgs_{n_iter}.npy'))
+    labels = np.load(osp.join(src_path, f'sample_c_{n_iter}.npy'))
+    out_folder = f'out/generate/{n_iter}'
+    if not osp.exists(out_folder):
+        os.mkdir(out_folder)
     expanded_mesh_dict = {}
 
     idx = 0
@@ -177,6 +184,8 @@ def CIPS_visualize(mesh_handler, out_json_file=''):
         disp_img = (disp_img + 1) / 2 * 255
         disp_img = np.rint(disp_img).clip(0, 255).astype(np.uint8)
         disp_img = disp_img.transpose(1, 2, 0)
+        if save_img:
+            mmcv.imwrite(disp_img, osp.join(out_folder, f'UV_{idx:04d}.jpg'))
         
         disp_map = disp_demodulate(disp_img)
         expanded_mesh_file = mesh_handler.get_expanded_mesh(label)
@@ -202,16 +211,19 @@ if __name__ == '__main__':
         expanded_mesh_dir=expanded_mesh_dir
     )
 
-    #stylegan2_visualize(mesh_handler)
-    #GT_visualize(mesh_handler, out_json_file='expanded_info.json')
-    #CIPS_visualize(mesh_handler, out_json_file='expanded_info.json')
-    
-    mesh_folder = 'out/generate'
+    stylegan2_visualize(mesh_handler, save_img=True)
+    #GT_visualize(mesh_handler, out_json_file='expanded_info.json', save_img=True)
+    #CIPS_visualize(mesh_handler, out_json_file='expanded_info.json', n_iter=50000)
+    #CIPS_visualize(mesh_handler, out_json_file='expanded_info.json', n_iter=100000, save_img=True)
+    #CIPS_visualize(mesh_handler, out_json_file='expanded_info.json', n_iter=150000)
+    """ 
+    mesh_folder = 'out/generate/100000'
     mesh_list = sorted(glob(osp.join(mesh_folder, '*.obj')))
     expanded_mesh_info = mmcv.load(osp.join(mesh_folder, 'expanded_info.json'))
     for idx, mesh_file in enumerate(mesh_list):
-        #mesh_handler.get_normal_map(mesh_file, osp.join(mesh_folder, f'{idx:04}.jpg'))
+        mesh_handler.get_normal_map(mesh_file, osp.join(mesh_folder, f'{idx:04}.jpg'))
         expanded_mesh_file = expanded_mesh_info[str(idx)]
         assert osp.isfile(expanded_mesh_file)
         #mesh_handler.get_disp_normal_map(mesh_file, expanded_mesh_file, osp.join(mesh_folder, f'disp_{idx:04}.jpg'))
         mesh_handler.get_normal_map_local(mesh_file, expanded_mesh_file, osp.join(mesh_folder, f'local_{idx:04}.jpg'))
+    """ 

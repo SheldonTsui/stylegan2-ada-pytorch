@@ -24,6 +24,7 @@ import numpy as np
 import PIL.Image
 from tqdm import tqdm
 from glob import glob
+from scripts.disp_modulation import disp_modulate
 
 #----------------------------------------------------------------------------
 
@@ -80,7 +81,6 @@ def pkl_param_parsing(pkl_fname):
 #----------------------------------------------------------------------------
 
 def open_image_folder(source_dir, *, max_images: Optional[int]):
-    EXPAND = 10
     resolution = 256 
     dataset_name = source_dir.split('/')[-1]
     #input_images = [str(f) for f in sorted(Path(source_dir).rglob('*')) if is_image_ext(f) and os.path.isfile(f)]
@@ -98,7 +98,8 @@ def open_image_folder(source_dir, *, max_images: Optional[int]):
             arch_fname = os.path.relpath(fname, source_dir)
             arch_fname = arch_fname.replace('\\', '/')
             img = np.load(fname)[0].astype(np.float32) # squeeze the first dim
-            img = (img * EXPAND).clip(min=-1, max=1)
+            img = disp_modulate(img, max_value=1)
+            #img = (img * EXPAND).clip(min=-1, max=1)
             name = '/'.join(fname.split('/')[-3:-1])
             yield dict(img=img, label=None, name=name)
             if idx >= max_idx-1:
