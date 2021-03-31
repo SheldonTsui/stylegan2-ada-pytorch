@@ -25,7 +25,6 @@ import legacy
 from metrics import metric_main
 import pdb
 #----------------------------------------------------------------------------
-DISP_EXPAND = 8
 
 def setup_snapshot_image_grid(training_set, random_seed=0):
     rnd = np.random.RandomState(random_seed)
@@ -62,13 +61,12 @@ def setup_snapshot_image_grid(training_set, random_seed=0):
 
     # Load data.
     images, labels = zip(*[training_set[i] for i in grid_indices])
-    images = [(image * DISP_EXPAND).clip(min=-1, max=1) for image in images]
     return (gw, gh), np.stack(images), np.stack(labels)
 
 #----------------------------------------------------------------------------
 
 def save_image_grid(img, label, fname, grid_size):
-    img = np.asarray(img, dtype=np.float32) / DISP_EXPAND
+    img = np.asarray(img, dtype=np.float32)
     label = np.asarray(label, dtype=np.float32)
     assert img.shape[0] == label.shape[0]
 
@@ -257,7 +255,7 @@ def training_loop(
         # Fetch training data.
         with torch.autograd.profiler.record_function('data_fetch'):
             phase_real_img, phase_real_c = next(training_set_iterator)
-            phase_real_img = (phase_real_img.to(device).to(torch.float32) * DISP_EXPAND).clamp(min=-1, max=1).split(batch_gpu)
+            phase_real_img = phase_real_img.to(device).to(torch.float32).split(batch_gpu)
             phase_real_c = phase_real_c.to(device).split(batch_gpu)
             all_gen_z = torch.randn([len(phases) * batch_size, G.z_dim], device=device)
             all_gen_z = [phase_gen_z.split(batch_gpu) for phase_gen_z in all_gen_z.split(batch_size)]
